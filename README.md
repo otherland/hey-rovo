@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="hero.png" alt="hey-rovo" width="700">
+</p>
+
 <h1 align="center">hey-rovo</h1>
 
 <p align="center">
