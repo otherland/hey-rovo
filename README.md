@@ -20,11 +20,11 @@ cp .env.example .env
 chmod +x rovo
 ```
 
-## Grabbing your tokens
+Edit `.env` with your site URL and session token (see below).
 
-You need three things from your browser. All of them live in your browser cookies and network tab.
+## Grabbing your session token
 
-### 1. Session token
+You only need one thing from your browser:
 
 1. Open your Atlassian site (e.g. `yoursite.atlassian.net`)
 2. Open DevTools (`Cmd+Option+I` / `F12`)
@@ -32,20 +32,7 @@ You need three things from your browser. All of them live in your browser cookie
 4. Copy the value of `tenant.session.token`
 5. Paste it as `ROVO_SESSION_TOKEN` in `.env`
 
-> This token expires every ~30 days. When rovo stops working, just grab a fresh one.
-
-### 2. XSRF token
-
-Same cookies table - copy `atl.xsrf.token` into `ROVO_XSRF_TOKEN`.
-
-### 3. Conversation ID
-
-1. Open Rovo chat in Confluence (the AI chat widget)
-2. Send any message
-3. In DevTools **Network** tab, look for a request to `.../rovo/v1/chat/conversation/.../message/stream/sse`
-4. The UUID in that URL path is your conversation ID
-
-Fill these into your `.env` and you're good to go.
+That's it. The token expires every ~30 days - when rovo stops working, just grab a fresh one.
 
 ## Usage
 
@@ -64,11 +51,13 @@ ln -s "$(pwd)/rovo" /usr/local/bin/rovo
 
 One curl to the Rovo SSE streaming endpoint, piped through a tiny Python script to extract the answer chunks. That's it. No dependencies beyond `curl` and `python3`.
 
+Each question starts a fresh conversation by default. Set `ROVO_CONVERSATION_ID` in `.env` to reuse the same thread.
+
 ## Limitations
 
 - Uses browser session cookies, not an API key (Rovo doesn't have a public API yet)
-- Tokens expire (~30 days) - you'll need to refresh them from your browser
-- One conversation thread per `.env` config
+- Token expires (~30 days) - refresh from your browser when it stops working
+- Requires `curl` and `python3`
 
 ## License
 

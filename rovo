@@ -19,17 +19,22 @@ set -a
 source "$ENV_FILE"
 set +a
 
-for var in ROVO_SESSION_TOKEN ROVO_XSRF_TOKEN ROVO_CONVERSATION_ID ROVO_BASE_URL; do
-  if [ -z "${!var:-}" ]; then
-    echo "Missing $var in $ENV_FILE"
-    exit 1
-  fi
-done
+if [ -z "${ROVO_SESSION_TOKEN:-}" ]; then
+  echo "Missing ROVO_SESSION_TOKEN in $ENV_FILE"
+  exit 1
+fi
+if [ -z "${ROVO_BASE_URL:-}" ]; then
+  echo "Missing ROVO_BASE_URL in $ENV_FILE"
+  exit 1
+fi
+
+# Each invocation gets a fresh conversation (or reuse one from .env)
+CONV_ID="${ROVO_CONVERSATION_ID:-$(python3 -c "import uuid; print(uuid.uuid4())")}"
 
 QUERY="${*:-hello}"
 
-curl -s "${ROVO_BASE_URL}/gateway/api/assist/rovo/v1/chat/conversation/${ROVO_CONVERSATION_ID}/message/stream/sse" \
-  -H "Cookie: cloud.session.token=${ROVO_SESSION_TOKEN}; tenant.session.token=${ROVO_SESSION_TOKEN}; atl.xsrf.token=${ROVO_XSRF_TOKEN}" \
+curl -s "${ROVO_BASE_URL}/gateway/api/assist/rovo/v1/chat/conversation/${CONV_ID}/message/stream/sse" \
+  -H "Cookie: tenant.session.token=${ROVO_SESSION_TOKEN}" \
   -H 'x-atlassian-token: no-check' \
   -H 'content-type: application/json;charset=UTF-8' \
   -H 'x-product: confluence' \
