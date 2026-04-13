@@ -49,7 +49,7 @@ ln -s "$(pwd)/rovo" /usr/local/bin/rovo
 
 ## How it works
 
-One curl to the Rovo SSE streaming endpoint, piped through a tiny Python script to extract the answer chunks. That's it. No dependencies beyond `curl` and `python3`.
+One curl to the Rovo SSE streaming endpoint, piped through `grep` and `sed` to extract the answer. No dependencies beyond `curl` and standard unix tools.
 
 Each question starts a fresh conversation by default. Set `ROVO_CONVERSATION_ID` in `.env` to reuse the same thread.
 
@@ -57,7 +57,7 @@ Each question starts a fresh conversation by default. Set `ROVO_CONVERSATION_ID`
 
 - Uses browser session cookies, not an API key (Rovo doesn't have a public API yet)
 - Token expires (~30 days) - refresh from your browser when it stops working
-- Requires `curl` and `python3`
+- Requires `curl` and `uuidgen` (both pre-installed on macOS and most Linux)
 
 ## License
 

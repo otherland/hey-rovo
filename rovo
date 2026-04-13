@@ -29,7 +29,7 @@ if [ -z "${ROVO_BASE_URL:-}" ]; then
 fi
 
 # Each invocation gets a fresh conversation (or reuse one from .env)
-CONV_ID="${ROVO_CONVERSATION_ID:-$(python3 -c "import uuid; print(uuid.uuid4())")}"
+CONV_ID="${ROVO_CONVERSATION_ID:-$(uuidgen | tr '[:upper:]' '[:lower:]')}"
 
 QUERY="${*:-hello}"
 
@@ -41,14 +41,6 @@ curl -s "${ROVO_BASE_URL}/gateway/api/assist/rovo/v1/chat/conversation/${CONV_ID
   -H 'x-channel-id: rovo-chat' \
   -H 'x-experience-id: ai-mate' \
   --data-raw "{\"content\":{\"version\":1,\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"$(echo "$QUERY" | sed 's/\\/\\\\/g; s/"/\\"/g')\"}]}]},\"context\":{\"browser_url\":\"${ROVO_CONTEXT_URL:-${ROVO_BASE_URL}}\",\"useCurrentBrowsingContext\":false,\"webSearchEnabled\":false,\"deepResearchEnabled\":false,\"creationContext\":{\"isStagingArea\":false,\"productKey\":\"confluence\",\"isViewMode\":false},\"userTimezone\":\"$(cat /etc/timezone 2>/dev/null || echo 'UTC')\",\"fileIds\":[]},\"mimeType\":\"text/adf\",\"store_message\":false,\"citations_enabled\":true}" \
-| grep '^data:' | grep 'ANSWER_PART' | \
-  python3 -c "
-import sys, json
-for line in sys.stdin:
-    data = line.strip().removeprefix('data:')
-    try:
-        print(json.loads(data)['message']['content'], end='', flush=True)
-    except:
-        pass
-print()
-"
+| grep '^data:' | grep 'ANSWER_PART' \
+| sed 's/^data://; s/.*"content":"//; s/","role.*//' \
+| tr -d '\n' && echo
