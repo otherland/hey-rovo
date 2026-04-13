@@ -1,6 +1,18 @@
-# hey-rovo
+<h1 align="center">hey-rovo</h1>
 
-Talk to [Atlassian Rovo](https://www.atlassian.com/software/rovo) from your terminal. No API keys needed - just your browser session.
+<p align="center">
+  <em>Talk to Atlassian Rovo from your terminal.</em><br>
+  One bash script. No API key. No dependencies.
+</p>
+
+<p align="center">
+  <a href="#setup">Setup</a> &middot;
+  <a href="#usage">Usage</a> &middot;
+  <a href="#how-it-works">How it works</a> &middot;
+  <a href="LICENSE">MIT License</a>
+</p>
+
+---
 
 ```
 $ rovo "what tickets did I update this week?"
@@ -8,8 +20,10 @@ $ rovo "what tickets did I update this week?"
 Here are your recently updated tickets:
 1. PROJ-42 - Fix the thing that broke the other thing
 2. PROJ-99 - Add dark mode (finally)
-...
+3. PROJ-7  - Update docs nobody reads
 ```
+
+Rovo doesn't have a public API. This script doesn't care. It uses your browser session cookie to hit the same streaming endpoint that the Rovo chat widget uses. One cookie, one curl, done.
 
 ## Setup
 
@@ -20,44 +34,43 @@ cp .env.example .env
 chmod +x rovo
 ```
 
-Edit `.env` with your site URL and session token (see below).
+Then grab your session token (takes 30 seconds):
 
-## Grabbing your session token
+1. Open your Atlassian site in Chrome
+2. DevTools (`Cmd+Option+I`) > **Application** > **Cookies**
+3. Copy `tenant.session.token`
+4. Paste into `.env`
 
-You only need one thing from your browser:
+```env
+ROVO_BASE_URL="https://yoursite.atlassian.net"
+ROVO_SESSION_TOKEN="eyJraWQ..."
+```
 
-1. Open your Atlassian site (e.g. `yoursite.atlassian.net`)
-2. Open DevTools (`Cmd+Option+I` / `F12`)
-3. Go to **Application** > **Cookies** > your site URL
-4. Copy the value of `tenant.session.token`
-5. Paste it as `ROVO_SESSION_TOKEN` in `.env`
-
-That's it. The token expires every ~30 days - when rovo stops working, just grab a fresh one.
+That's the whole setup. Token lasts ~30 days — when it stops working, grab a fresh one.
 
 ## Usage
 
 ```bash
-# Ask anything
 ./rovo "how do we deploy to production?"
-
-# Multi-word queries just work
 ./rovo what tickets are blocked right now
+./rovo "summarise the last sprint retro"
+```
 
-# Add to your PATH for convenience
+Optionally add to your PATH:
+
+```bash
 ln -s "$(pwd)/rovo" /usr/local/bin/rovo
 ```
 
 ## How it works
 
-One curl to the Rovo SSE streaming endpoint, piped through `grep` and `sed` to extract the answer. No dependencies beyond `curl` and standard unix tools.
+```
+you → curl → Rovo SSE endpoint → grep + sed → terminal
+```
 
-Each question starts a fresh conversation by default. Set `ROVO_CONVERSATION_ID` in `.env` to reuse the same thread.
+Each question starts a fresh conversation. Set `ROVO_CONVERSATION_ID` in `.env` to keep a thread going.
 
-## Limitations
-
-- Uses browser session cookies, not an API key (Rovo doesn't have a public API yet)
-- Token expires (~30 days) - refresh from your browser when it stops working
-- Requires `curl` and `uuidgen` (both pre-installed on macOS and most Linux)
+The entire script is ~40 lines of bash. No Python. No Node. No dependencies beyond `curl` and `uuidgen` (pre-installed on macOS and most Linux).
 
 ## License
 
